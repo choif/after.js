@@ -18,6 +18,7 @@ export type AfterRenderProps<T> = T & {
   renderToString: Function;
   routes: Partial<RouteProps>[];
   document?: React.ComponentType<any>;
+  doctype: boolean;
 };
 
 export async function render<T>(options: AfterRenderProps<T>) {
@@ -28,6 +29,7 @@ export async function render<T>(options: AfterRenderProps<T>) {
     assets,
     document: Document,
     renderToString: customRenderer,
+    doctype = true,
     ...rest
   } = options as any;
   const Doc = Document || DefaultDoc;
@@ -68,9 +70,13 @@ export async function render<T>(options: AfterRenderProps<T>) {
     data,
   });
 
-  const doc = ReactDOMServer.renderToStaticMarkup(<Doc {...docProps} />);
-  return (
-    `<!doctype html>` +
-    doc.replace('DO_NOT_DELETE_THIS_YOU_WILL_BREAK_YOUR_APP', html)
-  );
+  const doc = ReactDOMServer
+    .renderToStaticMarkup(<Doc {...docProps} />)
+    .replace('DO_NOT_DELETE_THIS_YOU_WILL_BREAK_YOUR_APP', html);
+
+  const doctypeHtml = doctype
+    ? '<!doctype html>'
+    : '';
+
+  return `${doctypeHtml}${doc}`;
 }
